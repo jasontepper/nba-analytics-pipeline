@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: nba_postgres
+    environment:
+      POSTGRES_DB: nba
+      POSTGRES_USER: nba_user
+      POSTGRES_PASSWORD: nba_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - nba_pgdata:/var/lib/postgresql/data
+
+volumes:
+  nba_pgdata:
