@@ -38,10 +38,9 @@ PostgreSQL · Docker · Python · pandas · Streamlit · cron · Discord
 - `player_rolling_stats`, `player_season_summary`, `player_outliers` — derived analytics
 
 ## Dashboard
-![Leaderboards](screenshots/dashboard_1_leaderboards.png)
-![Player Trend](screenshots/dashboard_2_player_trend.png)
-![Hot & Cold](screenshots/dashboard_3_hot_cold.png)
-![Team Comparison](screenshots/dashboard_4_team_comparison.png)
+![Leaderboards — top scorers, rebounders, playmakers, and most consistent scorers](screenshots/dashboard_1.png)
+![Player trend explorer and hot/cold tracker](screenshots/dashboard_2.png)
+![Team comparison](screenshots/dashboard_3.png)
 
 ## Running Locally
 ```bash
