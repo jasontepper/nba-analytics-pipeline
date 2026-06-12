@@ -13,6 +13,7 @@ MAX_RETRIES = 3
 COLUMN_MAP = {
     "Game_ID": "game_id",
     "Player_ID": "player_id",
+    "Team_ID": "team_id",
     "GAME_DATE": "game_date",
     "MATCHUP": "matchup",
     "WL": "win_loss",
@@ -81,10 +82,12 @@ def transform(df):
     """Map API columns to our schema and clean types."""
     df = df.rename(columns=COLUMN_MAP)
 
-    # team_id isn't in the game log directly — derive from matchup later if needed.
-    # For now we pull it from a separate column the API provides.
     keep = list(COLUMN_MAP.values())
     df = df[[c for c in keep if c in df.columns]]
+
+    # Guarantee team_id column exists even if API omitted it
+    if "team_id" not in df.columns:
+        df["team_id"] = None
 
     # Parse game_date (API format like 'OCT 22, 2024')
     df["game_date"] = pd.to_datetime(df["game_date"], format="%b %d, %Y").dt.date
@@ -108,7 +111,6 @@ def load_game_logs():
             continue
 
         df = transform(df)
-        df["team_id"] = None  # placeholder; we'll backfill team_id below
 
         records = df.to_dict(orient="records")
         with engine.begin() as conn:
@@ -121,6 +123,18 @@ def load_game_logs():
 
     print(f"Done. Loaded {total_rows} game log rows.")
 
+def backfill_team_ids():
+    """Derive team_id from the matchup string (first token is the player's team abbreviation)."""
+    with engine.begin() as conn:
+        result = conn.execute(text("""
+            UPDATE game_logs g
+            SET team_id = t.team_id
+            FROM teams t
+            WHERE t.abbreviation = SPLIT_PART(g.matchup, ' ', 1)
+              AND g.team_id IS NULL
+        """))
+    print(f"Backfilled team_id for {result.rowcount} rows")
 
 if __name__ == "__main__":
     load_game_logs()
+    backfill_team_ids()
